@@ -14,7 +14,7 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
 
 ## Model
   ### Spatial cnn
-  * As mention before, we use ResNet101 pre-trained with ImageNet then fine-tuning on our UCF101 spatial rgb image dataset. 
+  * As mention before, we use ResNet101 first pre-trained with ImageNet then fine-tuning on our UCF101 spatial rgb image dataset. 
   ### Motion cnn
   * Input data of motion cnn is a stack of optical flow images which contained 10 x-channel and y-channel images, So it's input shape is (20, 224, 224) which can be considered as a 20-channel image. 
   * In order to utilize ImageNet pre-trained weight on our model, we have to modify the shape of first convolution layer weight from (64, 3, 7, 7) to (64, 20, 7, 7). 
