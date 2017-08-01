@@ -12,7 +12,7 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   1. Download the preprocessed tvl1 optical flow dataset directly from https://github.com/feichtenhofer/twostreamfusion. 
   2. Using [flownet2.0 method](https://github.com/lmb-freiburg/flownet2-docker) to generate 2-channel optical flow image and save its x,y channel as .jpg image in disk respectively which cost about 56G. 
 
-## Model
+## 2. Model
   ### Spatial cnn
   * As mention before, we use ResNet101 first pre-trained with ImageNet then fine-tuning on our UCF101 spatial rgb image dataset. 
   ### Motion cnn
