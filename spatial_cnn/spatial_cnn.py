@@ -149,7 +149,7 @@ def main():
 
 def load_dic():
 
-    dic_path = '/home/jeffrey/pytorch/ucf101_two_stream/spatial_cnn/dictionary/'
+    dic_path = '../dictionary/spatial/'
 
     with open(dic_path+'dic_training.pickle','rb') as f:
         dic_training=pickle.load(f)
@@ -373,7 +373,7 @@ def validate(test_loader, Model, criterion, L_test_keys, BATCH_SIZE):
 
 def video_level_acc(dic_video_level_preds):
     
-    with open('/home/jeffrey/pytorch/ucf101_two_stream/dic_video_label.pickle','rb') as f:
+    with open('../dictionary/dic_video_label.pickle','rb') as f:
         dic_video_label = pickle.load(f)
     f.close()
     
@@ -447,12 +447,11 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-def save_checkpoint(state, is_best, dic_video_level_preds, filename='../save/checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, dic_video_level_preds, filename='../save/spatial_checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, '../save/model_best.pth.tar')
-
-        with open('../save/dic_video_level_preds.pickle','wb') as f:
+        shutil.copyfile(filename, '../save/spatial_model_best.pth.tar')
+        with open('../save/dic_spaital_video_level_preds.pickle','wb') as f:
             pickle.dump(dic_video_level_preds,f)
         f.close()
 
