@@ -20,3 +20,14 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   * In order to utilize ImageNet pre-trained weight on our model, we have to modify the weights of the first convolution layer pre-trained  with ImageNet from (64, 3, 7, 7) to (64, 20, 7, 7). 
   * In [2] Wang provide a method called **Cross modality pre-training** to do such weights shape transform. He first average the weight value across the RGB channels and replicate this average by the channel number of motion steam input( which is 20 is this case) 
   
+## 3. Performace
+  * Spatial cnn 
+    top1: 82.4%, top5: 94.8%
+  * Motion cnn
+    top1: 67.2%, top5: 87.2%
+
+## 4. Result
+  <figure class="half">
+    <img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial.png", width = "300">
+    <img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion.png", width = "300">
+  </figure>
