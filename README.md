@@ -28,6 +28,6 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
 
 ## 4. Result
   <figure class="half">
-    <img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png", width = "300">
-    <img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion_cnn.png", width = "300">
+    <img src="{{ site.url }}/result/spatial_cnn.png">
+    <img src="{{ site.url }}/result/motion_cnn.png">
   </figure>
