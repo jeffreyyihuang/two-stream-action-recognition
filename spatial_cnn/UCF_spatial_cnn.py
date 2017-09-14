@@ -78,15 +78,15 @@ class Spatial_CNN():
 
         cudnn.benchmark = True
         if self.resume:
-            if os.path.isfile(args.resume):
-                print("==> loading checkpoint '{}'".format(args.resume))
+            if os.path.isfile(self.resume):
+                print("==> loading checkpoint '{}'".format(self.resume))
                 checkpoint = torch.load(self.resume)
                 self.start_epoch = checkpoint['epoch']
                 self.best_prec1 = checkpoint['best_prec1']
                 self.model.load_state_dict(checkpoint['state_dict'])
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
-                print("==> loaded checkpoint '{}' (epoch {})"
-                  .format(self.resume, checkpoint['epoch']))
+                print("==> loaded checkpoint '{}' (epoch {}) (best_prec1 {})"
+                  .format(self.resume, checkpoint['epoch'], self.best_prec1))
             else:
                 print("==> no checkpoint found at '{}'".format(self.resume))
         if self.evaluate:
