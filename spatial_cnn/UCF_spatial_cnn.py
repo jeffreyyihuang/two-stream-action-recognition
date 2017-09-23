@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from util import *
 from network import *
@@ -74,7 +75,8 @@ class Spatial_CNN():
         self.model = resnet101(pretrained= True,nb_classes=101).cuda()
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
-        self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9, weight_decay=1e-6)
+        self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
+        self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=0,verbose=True)
 
         cudnn.benchmark = True
         if self.resume:
@@ -97,6 +99,7 @@ class Spatial_CNN():
             self.train_1epoch()
             print('==> Epoch:[{0}/{1}][validation stage]'.format(self.epoch, self.nb_epochs))
             prec1, val_loss = self.validate_1epoch()
+            self.scheduler.step(prec1)
             
             is_best = prec1 > self.best_prec1
             if is_best:

@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from util import *
 from network import *
@@ -82,7 +83,8 @@ class Spatial_CNN():
         #print self.model
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
-        self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9, weight_decay=1e-6)
+        self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
+        self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=1,verbose=True)
 
     def resume_and_evaluate(self):
         if self.resume:
@@ -109,6 +111,8 @@ class Spatial_CNN():
             self.train_1epoch()
             prec1, val_loss = self.validate_1epoch()
             is_best = prec1 > self.best_prec1
+            #lr_scheduler
+            self.scheduler.step(prec1)
             # save model
             if is_best:
                 self.best_prec1 = prec1
@@ -135,7 +139,7 @@ class Spatial_CNN():
         progress = tqdm(self.train_loader)
         for i, (data,label) in enumerate(progress):
             #print data.size()
-            data = data.sub_(127.353346189).div_(14.971742063)
+            #data = data.sub_(127.353346189).div_(14.971742063)
             # measure data loading time
             data_time.update(time.time() - end)
             
@@ -184,7 +188,7 @@ class Spatial_CNN():
         progress = tqdm(self.test_loader)
         for i, (keys,data,label) in enumerate(progress):
             
-            data = data.sub_(127.353346189).div_(14.971742063)
+            #data = data.sub_(127.353346189).div_(14.971742063)
             label = label.cuda(async=True)
             data_var = Variable(data, volatile=True).cuda(async=True)
             label_var = Variable(label, volatile=True).cuda(async=True)
@@ -203,7 +207,7 @@ class Spatial_CNN():
             preds = output.data.cpu().numpy()
             nb_data = preds.shape[0]
             for j in range(nb_data):
-                videoName = keys[j] # ApplyMakeup_g01_c01
+                videoName = keys[j].split('-',1)[0] # ApplyMakeup_g01_c01
                 if videoName not in self.dic_video_level_preds.keys():
                     self.dic_video_level_preds[videoName] = preds[j,:]
                 else:
@@ -228,7 +232,8 @@ class Spatial_CNN():
         video_level_preds = np.zeros((len(self.dic_video_level_preds),101))
         video_level_labels = np.zeros(len(self.dic_video_level_preds))
         ii=0
-        for name in sorted(self.dic_video_level_preds.keys()):
+        for key in sorted(self.dic_video_level_preds.keys()):
+            name = key.split('-',1)[0]
             n,g = name.split('_',1)
             if n == 'HandstandPushups':
                 name2 = 'HandStandPushups_'+g
@@ -264,17 +269,22 @@ class Data_Loader():
         self.data_path=data_path
         self.nb_per_stack=nb_per_stack
         #load data dictionary
-        with open(dic_path+'/dic_training.pickle','rb') as f:
-            self.dic_training=pickle.load(f)
+        with open(dic_path+'/frame_count.pickle','rb') as f:
+            self.dic_nb_frame=pickle.load(f)
         f.close()
 
-        with open(dic_path+'/dic_test25.pickle','rb') as f:
+        with open(dic_path+'Video_training.pickle') as f:
+            self.dic_video_training = pickle.load(f)
+        f.close()
+
+        with open(dic_path+'/dic_test25_motion.pickle','rb') as f:
             self.dic_testing=pickle.load(f)
         f.close()
        
     def train(self):
         training_set = UCF101_opf_training_set(
-                dic=self.dic_training, 
+                dic_nb_frame=self.dic_nb_frame,
+                dic_video_training=self.dic_video_training, 
                 #nb_per_stack=self.nb_per_stack,
                 root_dir=self.data_path,
                 transform = transforms.Compose([
@@ -282,7 +292,7 @@ class Data_Loader():
                             #transforms.RandomHorizontalFlip(),
                             #transforms.ToTensor(),
                             ]))
-        print '==> Training data :',len(training_set)
+        print '==> Training data :',len(training_set),'videos'
 
         train_loader = DataLoader(
             dataset=training_set, 
@@ -300,7 +310,7 @@ class Data_Loader():
                             transforms.CenterCrop(224),
                             #transforms.ToTensor(),
                             ]))
-        print '==> Validation data :',len(validation_set)
+        print '==> Validation data :',len(validation_set),'frames'
 
         test_loader = DataLoader(
             dataset=validation_set, 

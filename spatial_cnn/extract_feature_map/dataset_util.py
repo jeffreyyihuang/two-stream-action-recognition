@@ -16,6 +16,73 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 from torch.optim import Optimizer
 
+class UCF_training_set(Dataset):  
+    def __init__(self, dic, root_dir, transform=None):
+ 
+        self.keys = dic.keys()
+        self.values = dic.values()
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.keys)
+
+    def __getitem__(self, idx):
+        
+        frame = self.keys[idx]
+        if frame.split('/',1)[0] == 'HandStandPushups':
+            frame = 'HandstandPushups/'+frame.split('/',1)[1]
+        img = Image.open(self.root_dir + frame)
+        label = self.values[idx]
+        label = int(label)-1
+
+        transformed_img = self.transform(img)
+        
+
+        v,classname,g,c,idx = frame.split('/')[-1].split('.',1)[0].split('_',4)
+        
+        key = classname+'/'+classname+'_'+g+'_'+c+'/'+'[@]'+str(idx).zfill(6)
+        img.close()
+
+        sample = (key,transformed_img,label)
+        return sample
+
+class UCF_testing_set(Dataset):  
+    def __init__(self, ucf_list, root_dir, transform=None):
+ 
+        self.ucf_list = ucf_list
+        self.root_dir = root_dir
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.ucf_list)
+
+    def __getitem__(self, idx):
+        #img_name = os.path.join(self.root_dir, self.landmarks_frame.ix[idx, 0])
+        key,label = self.ucf_list[idx].split('[@]')
+        video_name,idx = key.split('-')
+	
+
+        #open image
+        if video_name.split('_')[0] == 'HandstandPushups':
+            n,g = video_name.split('_',1)
+            name = 'HandStandPushups_'+g
+            path = self.root_dir + 'HandstandPushups'+'/separated_images/v_'+name+'/v_'+name+'_'
+        else:
+            path = self.root_dir + video_name.split('_')[0]+'/separated_images/v_'+video_name+'/v_'+video_name+'_'
+         
+        img = Image.open(path +str(idx)+'.jpg')
+        label = int(label)-1
+
+        if self.transform:
+            transformed_img = self.transform(img)
+        img.close()
+
+        name = video_name.split('_',1)[0]+'/'+video_name+'/'+'[@]'+str(idx).zfill(6)
+
+
+        sample = (name,transformed_img, label)
+        return sample
 
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
@@ -54,68 +121,7 @@ def save_checkpoint(state, is_best, filename='record/checkpoint.pth.tar'):
     if is_best:
         shutil.copyfile(filename, 'record/model_best.pth.tar')
 
-class UCF_training_set(Dataset):  
-    def __init__(self, dic, root_dir, transform=None):
- 
-        self.keys = dic.keys()
-        self.values = dic.values()
-        self.root_dir = root_dir
-        self.transform = transform
 
-    def __len__(self):
-        return len(self.keys)
-
-    def __getitem__(self, idx):
-        
-        frame = self.keys[idx]
-        if frame.split('/',1)[0] == 'HandStandPushups':
-            frame = 'HandstandPushups/'+frame.split('/',1)[1]
-        img = Image.open(self.root_dir + frame)
-        label = self.values[idx]
-        label = int(label)-1
-
-        transformed_img = self.transform(img)
-        sample = (transformed_img,label)
-
-           
-        img.close()
-        return sample
-
-class UCF_testing_set(Dataset):  
-    def __init__(self, ucf_list, root_dir, transform=None):
- 
-        self.ucf_list = ucf_list
-        self.root_dir = root_dir
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.ucf_list)
-
-    def __getitem__(self, idx):
-        #img_name = os.path.join(self.root_dir, self.landmarks_frame.ix[idx, 0])
-        key,label = self.ucf_list[idx].split('[@]')
-        video_name,idx = key.split('-')
-	
-
-        #open image
-        if video_name.split('_')[0] == 'HandstandPushups':
-            n,g = video_name.split('_',1)
-            name = 'HandStandPushups_'+g
-            path = self.root_dir + 'HandstandPushups'+'/separated_images/v_'+name+'/v_'+name+'_'
-        else:
-            path = self.root_dir + video_name.split('_')[0]+'/separated_images/v_'+video_name+'/v_'+video_name+'_'
-         
-        img = Image.open(path +str(idx)+'.jpg')
-        label = int(label)-1
-
-        if self.transform:
-            transformed_img = self.transform(img)
-            sample = (video_name, transformed_img, label)
-        else:
-            sample = (video_name, img, label)
-                 
-        img.close()
-        return sample
 
 
 

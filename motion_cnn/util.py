@@ -19,10 +19,17 @@ from torch.optim import Optimizer
 
 # Dataset
 class UCF101_opf_training_set(Dataset):  
-    def __init__(self, dic, root_dir, transform):
+    def __init__(self, dic_video_training, dic_nb_frame, root_dir, transform):
 
-        self.keys = dic.keys()
-        self.values = dic.values()
+        self.dic_nb_stack = {}
+        for key in dic_nb_frame:
+            videoname=key.split('.',1)[0].split('_',1)[1]
+            self.dic_nb_stack[videoname]=dic_nb_frame[key]-9
+
+
+
+        self.keys = dic_video_training.keys()
+        self.values = dic_video_training.values()
         self.root_dir = root_dir
         self.transform = transform
 
@@ -30,15 +37,20 @@ class UCF101_opf_training_set(Dataset):
         return len(self.keys)
 
     def __getitem__(self, idx):
-        key = self.keys[idx]
-        classname,stack_idx = key.split('-')
-        
-        stack_opf_image = stackopf(classname,stack_idx,self.root_dir,self.transform)
+        videoname = self.keys[idx]
+        n,g = videoname.split('_',1)
+        if n == 'HandStandPushups':
+            videoname = 'HandstandPushups_'+g
+
+        nb_frame = int(self.dic_nb_stack[videoname])
+        stack_idx = randint(1,nb_frame)
+
+        stack_opf_image = stackopf(videoname,stack_idx,self.root_dir,self.transform)
         
         label = self.values[idx]
         label = int(label)-1
 
-        sample = (torch.from_numpy(stack_opf_image).float(),label)
+        sample = (stack_opf_image,label)
     
         return sample
 
@@ -91,7 +103,7 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
         flow[2*(j-1)+1,:,:] = V      
         imgH.close()
         imgV.close()  
-    return flow
+    return torch.from_numpy(flow).float().div(255)
 # other util
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""

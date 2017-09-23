@@ -19,10 +19,10 @@ from util import *
 from network import *
 from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 parser = argparse.ArgumentParser(description='PyTorch Sub-JHMDB rgb frame training')
-parser.add_argument('--epochs', default=50, type=int, metavar='N', help='number of total epochs')
+parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
 parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-3, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
@@ -39,7 +39,7 @@ def main():
     data_loader = Data_Loader(
                         BATCH_SIZE=arg.batch_size,
                         num_workers=8,
-                        dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dictionary/spatial/'
+                        dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dictionary/motion/'
                         )
     
     train_loader = data_loader.train()
@@ -81,8 +81,8 @@ class Model():
         #Loss function and optimizer
         print ('==> Setup loss function and optimizer')
         self.criterion = nn.CrossEntropyLoss().cuda()
-        self.S_optimizer = torch.optim.SGD(self.spatial_cnn.parameters(), lr=1e-4, momentum=0.9)
-        self.M_optimizer = torch.optim.SGD(self.motion_cnn.parameters(), lr=1e-4, momentum=0.9)
+        self.S_optimizer = torch.optim.SGD(self.spatial_cnn.parameters(), lr=5e-6, momentum=0.9)
+        self.M_optimizer = torch.optim.SGD(self.motion_cnn.parameters(), lr=5e-3, momentum=0.9)
     '''
     def resume_and_evaluate(self):
         if self.resume:
@@ -273,17 +273,22 @@ class Data_Loader():
         self.BATCH_SIZE=BATCH_SIZE
         self.num_workers = num_workers
         #load data dictionary
-        with open(dic_path+'/dic_training.pickle','rb') as f:
+        with open(dic_path+'/Video_training.pickle','rb') as f:
             self.dic_training=pickle.load(f)
         f.close()
 
-        with open(dic_path+'/dic_test25.pickle','rb') as f:
+        with open(dic_path+'/frame_count.pickle','rb') as f:
+            self.dic_nb_frame=pickle.load(f)
+        f.close()
+
+        with open(dic_path+'/dic_test25_motion.pickle','rb') as f:
             self.dic_testing=pickle.load(f)
         f.close()
        
     def train(self):
         training_set = UCF_training_dataset(
-            dic=self.dic_training, 
+            dic_video=self.dic_training,
+            dic_nb_frame=self.dic_nb_frame, 
             rgb_root='/home/ubuntu/data/UCF101/spatial_no_sampled/', 
             opf_root='/home/ubuntu/data/UCF101/tvl1_flow/', 
             transform = transforms.Compose([

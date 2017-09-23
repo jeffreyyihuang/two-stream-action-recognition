@@ -13,27 +13,17 @@ from torch.utils.data import Dataset, DataLoader, ConcatDataset
 import torchvision.transforms as transforms
 
 class UCF_training_dataset(Dataset):  
-    def __init__(self, dic, rgb_root, opf_root, transform=None):
-        #print('==> get total frame numbers of each video')
-        frame_count={}
-        for key in dic:
-            videoname = key.split('/')[2]
-            frame = key.split('_')[-1].split('.',1)[0]
-            if videoname not in frame_count.keys():
-                frame_count[videoname] = int(frame)
-            else:
-                if int(frame) > frame_count[videoname]:
-                    frame_count[videoname] = int(frame)
-        #print frame_count
-        dic_stack={}
-        for key in dic:
-            videoname = key.split('/')[2]
-            frame = key.split('_')[-1].split('.',1)[0]
-            if int(frame) < frame_count[videoname]-9:
-                dic_stack[key] = dic[key]
- 
-        self.keys = dic_stack.keys()
-        self.values = dic_stack.values()
+    def __init__(self, dic_video, dic_nb_frame, rgb_root, opf_root, transform=None):
+
+        self.dic_nb_stack = {}
+        for key in dic_nb_frame:
+            videoname=key.split('.',1)[0].split('_',1)[1]
+            self.dic_nb_stack[videoname]=dic_nb_frame[key]-9
+
+
+        self.keys = dic_video.keys()
+        self.values = dic_video.values()
+        self.dic_nb_frame = dic_nb_frame
         self.rgb_root = rgb_root
         self.opf_root = opf_root
         self.transform = transform
@@ -43,22 +33,30 @@ class UCF_training_dataset(Dataset):
 
     def __getitem__(self, idx):
         
-        key = self.keys[idx]
-        #rgb
-        #print '\n',key
-        if key.split('/',1)[0] == 'HandStandPushups':
-            key = 'HandstandPushups/'+key.split('/',1)[1]
+        video_name = self.keys[idx]
+        if video_name.split('_')[0] == 'HandStandPushups':
+            n,g = video_name.split('_',1)
+            name = 'HandstandPushups_'+g
+        else:
+            name = video_name
 
-        img = Image.open(self.rgb_root + key)
+        nb_frame = self.dic_nb_stack[name]
+        idx = randint(1,nb_frame)
+
+        if video_name.split('_')[0] == 'HandStandPushups':
+            n,g = video_name.split('_',1)
+            name = 'HandStandPushups_'+g
+            path = self.rgb_root + 'HandstandPushups'+'/separated_images/v_'+name+'/v_'+name+'_'
+        else:
+            path = self.rgb_root + video_name.split('_')[0]+'/separated_images/v_'+video_name+'/v_'+video_name+'_'
+
+        img = Image.open(path +str(idx)+'.jpg')
         rgb_data = self.transform(img)
         img.close()
         t2 = transforms.Compose([transforms.ToTensor(),transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])])
         rgb_data=t2(rgb_data)
-        #opf
-        v,n1,n2,n3,stack_idx = key.split('/')[-1].split('.',1)[0].split('_',4)
-        classname = n1+ '_'+ n2+'_'+ n3
-        #stack_idx= str((int(stack_idx)-1)*10 +1)
-        opf_data = stackopf(classname,stack_idx,self.opf_root,self.transform)
+
+        opf_data = stackopf(video_name,idx,self.opf_root,self.transform)
     
         label = int(self.values[idx])-1
         sample=(rgb_data,opf_data,label)
@@ -67,27 +65,7 @@ class UCF_training_dataset(Dataset):
 class UCF_testing_dataset(Dataset):  
     def __init__(self, ucf_list, rgb_root, opf_root, transform=None):
 
-        frame_count={}
-        for key in ucf_list:
-            name,label = key.split('[@]')
-            videoname,idx = name.split('-')
-
-            if videoname not in frame_count.keys():
-                frame_count[videoname] = int(idx)
-            else:
-                if int(idx) > frame_count[videoname]:
-                    frame_count[videoname] = int(idx)
-        #print frame_count
-        dic_stack=[]
-        for key in ucf_list:
-            name,label = key.split('[@]')
-            videoname,idx = name.split('-')
-
-            if int(idx) < frame_count[videoname]-9:
-                dic_stack.append(key)
- 
- 
-        self.ucf_list = dic_stack
+        self.ucf_list = ucf_list
         self.rgb_root = rgb_root
         self.opf_root = opf_root
         self.transform = transform
@@ -137,7 +115,7 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
 
     for j in range(1,10+1):
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        idx = str((i-1)+j) # for overlap dataset
+        idx = str((i-1)+j) 
         #idx = str(10*(i-1)+j) # for nonoverlap dataset
         frame_idx = 'frame'+ idx.zfill(6)
         h_image = u +'/' + frame_idx +'.jpg'
