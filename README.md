@@ -22,11 +22,11 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   * In [2] Wang provide a method called **Cross modality pre-training** to do such weights shape transform. He first average the weight value across the RGB channels and replicate this average by the channel number of motion stream input( which is 20 is this case)
   
 ## 3. Training stategies
-  ### Spatial cnn
+  ###  3.1 Spatial cnn
   * In every mini-batch, we randomly select 64 frames from 186351 training frames.
-  ### Motion cnn
+  ### 3.2 Motion cnn
   * In every mini-batch, we randomly select 64(batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
-  ### Data augmentation
+  ### 3.3 Data augmentation
   * Both stream apply the same data augmentation technique such as random cropping.
 ## 4. Testing method
   * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is the voting result of all 25 frame level predictions.
