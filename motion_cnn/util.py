@@ -42,6 +42,8 @@ class UCF101_opf_training_set(Dataset):
         if n == 'HandStandPushups':
             videoname = 'HandstandPushups_'+g
 
+
+
         nb_frame = int(self.dic_nb_stack[videoname])
         stack_idx = randint(1,nb_frame)
 
@@ -84,6 +86,8 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
     
     flow = np.zeros((20,224,224))
     i = int(stack_idx)
+    r_crop = Random_Crop()
+    r_crop.get_crop_size()
 
     for j in range(1,10+1):
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -95,15 +99,38 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
         
         imgH=(Image.open(h_image))
         imgV=(Image.open(v_image))
-        
-        H = transform(imgH)
-        V = transform(imgV)
+        if transform:
+            H = r_crop.crop_and_resize(transform(imgH))
+            V = r_crop.crop_and_resize(transform(imgV))
+            
+        else:
+            H = imgH.resize([224,224])
+            V = imgV.resize([224,224])
         
         flow[2*(j-1),:,:] = H
         flow[2*(j-1)+1,:,:] = V      
         imgH.close()
         imgV.close()  
     return torch.from_numpy(flow).float().div(255)
+#customize random cropping
+class Random_Crop():
+    def get_crop_size(self):
+        H = [256,224,192,168]
+        W = [256,224,192,168]
+        id1 = randint(0,len(H)-1)
+        id2 = randint(0,len(W)-1)
+        self.h_crop = H[id1]
+        self.w_crop = W[id2]
+        
+        self.h0 = randint(0,256-self.h_crop)
+        self.w0 = randint(0,256-self.w_crop)
+        
+
+    def crop_and_resize(self,img):
+        crop = img.crop([self.h0,self.w0,self.h_crop,self.w_crop])
+        resize = crop.resize([224,224])
+        return resize    
+    
 # other util
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""

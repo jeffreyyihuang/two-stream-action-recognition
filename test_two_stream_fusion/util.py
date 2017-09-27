@@ -102,7 +102,7 @@ def record_info(info,filename,mode):
         print result
 
         df = pd.DataFrame.from_dict(info)
-        column_names = ['Epoch','Batch Time','rgb loss','rgb Prec@1','rgb Prec@5','opf loss','opf Prec@1','opf Prec@5','fuse Prec@1','fuse Prec@5']
+        column_names = ['Batch Time','rgb loss','rgb Prec@1','rgb Prec@5','opf loss','opf Prec@1','opf Prec@5','fuse Prec@1','fuse Prec@5']
     
     if not os.path.isfile(filename):
         df.to_csv(filename,index=False,columns=column_names)

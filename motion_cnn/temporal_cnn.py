@@ -22,9 +22,9 @@ from network import *
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 parser = argparse.ArgumentParser(description='PyTorch Sub-JHMDB rgb frame training')
-parser.add_argument('--epochs', default=50, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 64)')
-parser.add_argument('--lr', default=1e-3, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
+parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
@@ -288,7 +288,7 @@ class Data_Loader():
                 #nb_per_stack=self.nb_per_stack,
                 root_dir=self.data_path,
                 transform = transforms.Compose([
-                            transforms.RandomCrop(224),
+                            transforms.Scale(256),
                             #transforms.RandomHorizontalFlip(),
                             #transforms.ToTensor(),
                             ]))
@@ -298,7 +298,7 @@ class Data_Loader():
             dataset=training_set, 
             batch_size=self.BATCH_SIZE,
             shuffle=True,
-            num_workers=self.num_workers)
+            num_workers=4)
         return train_loader
 
     def validate(self):
@@ -306,10 +306,7 @@ class Data_Loader():
                 List=self.dic_testing,
                 #nb_per_stack=self.nb_per_stack,
                 root_dir=self.data_path,
-                transform = transforms.Compose([
-                            transforms.CenterCrop(224),
-                            #transforms.ToTensor(),
-                            ]))
+                transform = None)
         print '==> Validation data :',len(validation_set),'frames'
 
         test_loader = DataLoader(
