@@ -29,14 +29,14 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   ### Data augmentation
   * Both stream apply the same data augmentation technique such as random cropping.
 ## 4. Testing method
-  * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is generate from the sum of all 25 frame level predictions.
+  * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is the voting result of all 25 frame level predictions.
 ## 5. Performace
   * Spatial cnn 
-    top1: 82.4%, top5: 94.8%
+    **top1: 82.4%, top5: 94.8%
   * Motion cnn
-    top1: 78.2%, top5: 94.4%
+    **top1: 78.2%, top5: 94.4%
   * Fusion
-    top1: 89.0%, top5: 98.3%
+    **top1: 89.0%, top5: 98.3%
 
 ## 6. Result
 ![Spatial](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png)
