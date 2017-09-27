@@ -31,13 +31,13 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
 ## 4. Testing method
   * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is the voting result of all 25 frame level predictions.
 ## 5. Performace
-  * Spatial cnn 
-    **top1: 82.4%, top5: 94.8%
-  * Motion cnn
-    **top1: 78.2%, top5: 94.4%
-  * Fusion
-    **top1: 89.0%, top5: 98.3%
-
+   
+ network      | top1  | top5 |
+--------------|:-----:|:----:| 
+Spatial cnn   | 82.4% | 94.8% | 
+Motion cnn    | 78.2% | 94.4% | 
+Fusion        | 89.0% | 98.3% |     
+   
 ## 6. Result
 ![Spatial](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png)
 ![Motion](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion_cnn.png)
