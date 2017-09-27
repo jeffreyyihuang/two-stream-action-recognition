@@ -24,7 +24,9 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   * Spatial cnn 
     top1: 82.4%, top5: 94.8%
   * Motion cnn
-    top1: 67.2%, top5: 87.2%
+    top1: 78.2%, top5: 94.4%
+  * Fusion
+    top1: 89.0%, top5: 98.3%
 
 ## 4. Result
 ![Spatial](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png)
