@@ -39,5 +39,6 @@ Motion cnn    | 78.2% | 94.4% |
 Fusion        | 89.0% | 98.3% |     
    
 ## 6. Result
-![Spatial](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png)
-![Motion](https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion_cnn.png)
+<img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png" width = "400" height = "250" alt="Spatial" align=left />
+<img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion_cnn.png" width = "400" height = "250" alt="Motion" align=left />
+
