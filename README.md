@@ -25,7 +25,7 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   ###  3.1 Spatial cnn
   * In every mini-batch, we randomly select 64 frames from 186351 training frames.
   ### 3.2 Motion cnn
-  * In every mini-batch, we randomly select 64(batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
+  * In every mini-batch, we randomly select 64 (batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
   ### 3.3 Data augmentation
   * Both stream apply the same data augmentation technique such as random cropping.
 ## 4. Testing method
