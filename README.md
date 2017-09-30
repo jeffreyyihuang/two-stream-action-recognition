@@ -1,4 +1,4 @@
-# pytorch-two-stream-cnn-ucf101
+# two-stream-action-recognition-ucf101
 We use a spatial and motion stream cnn with ResNet101 as baseline for modeling video information in UCF101 dataset.
 ## Reference Paper
 *  [[1] Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
