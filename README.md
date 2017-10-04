@@ -1,4 +1,4 @@
-# pytorch-two-stream-cnn-ucf101
+# two-stream-action-recognition-ucf101
 We use a spatial and motion stream cnn with ResNet101 as baseline for modeling video information in UCF101 dataset.
 ## Reference Paper
 *  [[1] Two-stream convolutional networks for action recognition in videos](http://papers.nips.cc/paper/5353-two-stream-convolutional)
@@ -25,7 +25,7 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
   ###  3.1 Spatial cnn
   * In every mini-batch, we randomly select 64 frames from 186351 training frames.
   ### 3.2 Motion cnn
-  * In every mini-batch, we randomly select 64(batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
+  * In every mini-batch, we randomly select 64 (batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
   ### 3.3 Data augmentation
   * Both stream apply the same data augmentation technique such as random cropping.
 ## 4. Testing method
@@ -36,7 +36,7 @@ We use a spatial and motion stream cnn with ResNet101 as baseline for modeling v
 --------------|:-----:|:----:| 
 Spatial cnn   | 82.4% | 94.8% | 
 Motion cnn    | 78.2% | 94.4% | 
-Fusion        | 89.0% | 98.3% |     
+Average fusion| 89.9% | 98.3% |     
    
 ## 6. Result
 <img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png" width = "400" height = "250" alt="Spatial" align=left />
