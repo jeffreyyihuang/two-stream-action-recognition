@@ -188,7 +188,7 @@ class ResNet3D():
             nb_data = preds.shape[0]
             for j in range(nb_data):
                 videoName = keys[j].split('/',1)[0]
-                if videoName not in dic_video_level_preds.keys():
+                if videoName not in self.dic_video_level_preds.keys():
                     self.dic_video_level_preds[videoName] = preds[j,:]
                 else:
                     self.dic_video_level_preds[videoName] += preds[j,:]
@@ -223,14 +223,9 @@ class ResNet3D():
         ii=0
         for key in sorted(self.dic_video_level_preds.keys()):
             name = key.split('-',1)[0]
-            n,g = name.split('_',1)
-            if n == 'HandstandPushups':
-                name2 = 'HandStandPushups_'+g
-            else:
-                name2 =name
 
             preds = self.dic_video_level_preds[name]
-            label = int(dic_video_label[name2])-1
+            label = int(dic_video_label[name])-1
                 
             video_level_preds[ii,:] = preds
             video_level_labels[ii] = label
