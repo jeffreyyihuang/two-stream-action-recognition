@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 from PIL import Image
 import time
-import tqdm
+from tqdm import tqdm
 import shutil
 from random import randint
 import argparse
@@ -20,11 +20,11 @@ from util import *
 from network import *
 from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 parser = argparse.ArgumentParser(description='PyTorch ResNet3D on UCF101')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-4, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
@@ -38,7 +38,7 @@ def main():
     #Prepare DataLoader
     data_loader =ResNet3D_DataLoader(
                         BATCH_SIZE=arg.batch_size,
-                        num_workers=4,
+                        num_workers=8,
                         data_path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
                         dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/resnet3d/dic/', 
                         )
@@ -121,7 +121,7 @@ class ResNet3D():
         self.model.train()    
         end = time.time()
         # mini-batch training
-        for i, (data,label) in tqdm(enumerate(self.train_loader)):
+        for i, (data,label) in enumerate(tqdm(self.train_loader)):
 
     
             # measure data loading time
@@ -165,9 +165,9 @@ class ResNet3D():
         top5 = AverageMeter()
         # switch to evaluate mode
         self.model.eval()
-        dic_video_level_preds={}
+        self.dic_video_level_preds={}
         end = time.time()
-        for i, (keys,data,label) in tqdm(enumerate(self.val_loader)):
+        for i, (keys,data,label) in enumerate(tqdm(self.val_loader)):
             
             label = label.cuda(async=True)
             data_var = Variable(data, volatile=True).cuda(async=True)
@@ -189,11 +189,12 @@ class ResNet3D():
             for j in range(nb_data):
                 videoName = keys[j].split('/',1)[0]
                 if videoName not in dic_video_level_preds.keys():
-                    dic_video_level_preds[videoName] = preds[j,:]
+                    self.dic_video_level_preds[videoName] = preds[j,:]
                 else:
-                    dic_video_level_preds[videoName] += preds[j,:]
+                    self.dic_video_level_preds[videoName] += preds[j,:]
 
-        video_top1, video_top5 = frame2_video_level_accuracy(dic_video_level_preds)
+        video_top1, video_top5 = self.frame2_video_level_accuracy()
+
         info = {'Epoch':[self.epoch],
                 'Batch Time':[round(batch_time.avg,3)],
                 'Loss':[round(losses.avg,5)],
@@ -201,6 +202,53 @@ class ResNet3D():
                 'Prec@5':[round(video_top5,3)]}
         record_info(info, 'record/testing.csv','test')
         return video_top1, losses.avg
+
+    def frame2_video_level_accuracy(self):
+        with open('/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dic_video_label.pickle','rb') as f:
+            video_label = pickle.load(f)
+        f.close()
+
+        dic_video_label={}
+        for video in video_label:
+            n,g = video.split('_',1)
+            if n == 'HandStandPushups':
+                key = 'HandstandPushups_'+ g
+            else:
+                key=video
+            dic_video_label[key]=video_label[video] 
+            
+        correct = 0
+        video_level_preds = np.zeros((len(self.dic_video_level_preds),101))
+        video_level_labels = np.zeros(len(self.dic_video_level_preds))
+        ii=0
+        for key in sorted(self.dic_video_level_preds.keys()):
+            name = key.split('-',1)[0]
+            n,g = name.split('_',1)
+            if n == 'HandstandPushups':
+                name2 = 'HandStandPushups_'+g
+            else:
+                name2 =name
+
+            preds = self.dic_video_level_preds[name]
+            label = int(dic_video_label[name2])-1
+                
+            video_level_preds[ii,:] = preds
+            video_level_labels[ii] = label
+            ii+=1         
+            if np.argmax(preds) == (label):
+                correct+=1
+
+        #top1 top5
+        video_level_labels = torch.from_numpy(video_level_labels).long()
+        video_level_preds = torch.from_numpy(video_level_preds).float()
+            
+        top1,top5 = accuracy(video_level_preds, video_level_labels, topk=(1,5))     
+                            
+        top1 = float(top1.numpy())
+        top5 = float(top5.numpy())
+            
+        #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
+        return top1,top5
 
 
 if __name__ == '__main__':

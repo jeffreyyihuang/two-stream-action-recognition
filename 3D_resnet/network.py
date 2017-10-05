@@ -190,10 +190,7 @@ def weight_trainsform(pretrain_dict, model_dict):
             weight3d = model_dict[key]
             model_dict[key] = filter2d_to_3d(weight2d, weight3d)
     return model_dict
-
-            
-
-
+ 
 
 def resnet18(**kwargs):
     """Constructs a ResNet-18 model.
