@@ -77,7 +77,7 @@ class ResNet3D():
         self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
         self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=1,verbose=True)
 
-        cudnn.benchmark = True
+        
         if self.resume:
             if os.path.isfile(self.resume):
                 print("==> loading checkpoint '{}'".format(self.resume))
@@ -93,6 +93,7 @@ class ResNet3D():
         if self.evaluate:
             prec1, val_loss = self.validate_1epoch()
 
+        cudnn.benchmark = True
         for self.epoch in range(self.start_epoch, self.nb_epochs):
             print('==> Epoch:[{0}/{1}][training stage]'.format(self.epoch, self.nb_epochs))
             self.train_1epoch()
