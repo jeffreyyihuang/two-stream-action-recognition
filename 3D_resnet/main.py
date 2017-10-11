@@ -70,14 +70,17 @@ class ResNet3D():
         self.val_loader=val_loader
         self.best_prec1=0
 
-    def run(self):
+    def build_model(self):
+        print ('==> Build model and setup loss and optimizer')
+        #build model
         self.model = resnet101().cuda()
+        #print self.model
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
         self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
         self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=1,verbose=True)
 
-        
+    def resume_and_evaluate(self):
         if self.resume:
             if os.path.isfile(self.resume):
                 print("==> loading checkpoint '{}'".format(self.resume))
@@ -92,6 +95,10 @@ class ResNet3D():
                 print("==> no checkpoint found at '{}'".format(self.resume))
         if self.evaluate:
             prec1, val_loss = self.validate_1epoch()
+    
+    def run(self):
+        self.build_model()
+        self.resume_and_evaluate()
 
         cudnn.benchmark = True
         for self.epoch in range(self.start_epoch, self.nb_epochs):
