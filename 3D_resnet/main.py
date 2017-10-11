@@ -20,12 +20,12 @@ from util import *
 from network import *
 from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 parser = argparse.ArgumentParser(description='PyTorch ResNet3D on UCF101')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 64)')
-parser.add_argument('--lr', default=1e-4, type=float, metavar='LR', help='initial learning rate')
+parser.add_argument('--batch-size', default=16, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
@@ -71,7 +71,7 @@ class ResNet3D():
         self.best_prec1=0
 
     def run(self):
-        self.model = resnet18().cuda()
+        self.model = resnet101().cuda()
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
         self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)

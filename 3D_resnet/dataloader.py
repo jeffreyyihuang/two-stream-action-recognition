@@ -17,11 +17,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class ResNet3D_dataset(Dataset):  
-    def __init__(self, dic, nb_clips, root_dir, mode, transform=None):
+    def __init__(self, dic, root_dir, mode, transform=None):
         #Generate a 16 Frame clip
         self.keys=dic.keys()
         self.values=dic.values()
-        self.nb_clips= nb_clips
         self.root_dir = root_dir
         self.transform = transform
         self.mode=mode
@@ -31,8 +30,8 @@ class ResNet3D_dataset(Dataset):
 
     def __getitem__(self, idx):
         if self.mode == 'train':
-            video = self.keys[idx]
-            clips_idx = randint(1,self.nb_clips[video])
+            video, nb_clips = self.keys[idx].split('-')
+            clips_idx = randint(1,int(nb_clips))
         elif self.mode == 'val':
             video,clips_idx = self.keys[idx].split('-')
         else:
@@ -41,8 +40,7 @@ class ResNet3D_dataset(Dataset):
         label = self.values[idx]
         label = int(label)-1
         data = torch.FloatTensor(3,16,112,112)
-        clip = [0 for x in range(16)]
-        s = time.time()
+
         for i in range(16):
             index = int(clips_idx) + i
             if video.split('_')[0] == 'HandstandPushups':
@@ -64,46 +62,6 @@ class ResNet3D_dataset(Dataset):
         else:
             raise ValueError('There are only train and val mode')
         return sample
-'''
-class ResNet3D_validation_set(Dataset):  
-    def __init__(self, dic, root_dir, transform=None):
-        #Generate a 16 Frame clip
-        self.keys=dic.keys()
-        self.values=dic.values()
-        self.root_dir = root_dir
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.keys)
-
-    def __getitem__(self, idx):
-        video,clip_idx = self.keys[idx].split('-')
-
-        if video.split('/',1)[0] == 'HandStandPushups':
-            video = 'HandstandPushups/'+video.split('/',1)[1]
-
-        label = self.values[idx]
-        label = int(label)-1
-        data = torch.FloatTensor(3,16,112,112)
-            
-        for i in range(16):
-            index = int(clip_idx) + i
-            if video.split('_')[0] == 'HandstandPushups':
-                n,g = video.split('_',1)
-                name = 'HandStandPushups_'+g
-                path = self.root_dir + 'HandstandPushups'+'/separated_images/v_'+name+'/v_'+name+'_'
-            else:
-                path = self.root_dir + video.split('_')[0]+'/separated_images/v_'+video+'/v_'+video+'_'
-         
-            img = Image.open(path +str(index)+'.jpg')
-            img = img.resize([112,112])
-            data[:,i,:,:] = self.transform(img)
-            img.close() 
-
-        sample = (video,data,label)
-        return sample
-'''
-
 
 class ResNet3D_DataLoader():
     def __init__(self, BATCH_SIZE, num_workers, data_path, dic_path):
@@ -168,17 +126,19 @@ class ResNet3D_DataLoader():
             if n == 'HandStandPushups':
                 video = 'HandstandPushups_'+ g
             label = self.dic_video_label[video]
-            self.dic_video_train[video] = label 
+            nb_clips = self.dic_nb_frame[video]
+            key = video +'-' + str(nb_clips)
+            self.dic_video_train[key] = label 
                             
     def train(self):
-        training_set = ResNet3D_dataset(dic=self.dic_video_train, nb_clips=self.dic_nb_frame, root_dir=self.data_path,
+        training_set = ResNet3D_dataset(dic=self.dic_video_train, root_dir=self.data_path,
             mode='train', 
             transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
         print '==> Training data :',len(training_set),' videos'
-        #aaa = training_set[1]
+        #print training_set[1]
 
         train_loader = DataLoader(
             dataset=training_set, 
@@ -189,14 +149,14 @@ class ResNet3D_DataLoader():
         return train_loader
 
     def val(self):
-        validation_set = ResNet3D_dataset(dic= self.dic_test_idx, nb_clips=self.dic_nb_frame, root_dir=self.data_path ,
+        validation_set = ResNet3D_dataset(dic= self.dic_test_idx, root_dir=self.data_path ,
             mode ='val',
             transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
         print '==> Validation data :',len(validation_set),' clips'
-        #bbb = validation_set[1]
+        #print validation_set[1]
 
         val_loader = DataLoader(
             dataset=validation_set, 
@@ -208,7 +168,7 @@ class ResNet3D_DataLoader():
 
 
 if __name__ == '__main__':
-    data_loader = ResNet3D_DataLoader(BATCH_SIZE=1,num_workers=8,
+    data_loader = ResNet3D_DataLoader(BATCH_SIZE=1,num_workers=1,
                                         dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/resnet3d/dic/',
                                         data_path='/home/ubuntu/data/UCF101/spatial_no_sampled/'
                                         )
