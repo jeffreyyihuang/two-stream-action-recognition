@@ -40,6 +40,7 @@ class ResNet3D_dataset(Dataset):
         label = self.values[idx]
         label = int(label)-1
         data = torch.FloatTensor(3,16,112,112)
+        #data = np.zeros((3,16,112,112))
 
         for i in range(16):
             index = int(clips_idx) + i
@@ -53,7 +54,8 @@ class ResNet3D_dataset(Dataset):
             img = Image.open(path +str(index)+'.jpg')
             img = img.resize([112,112])
             data[:,i,:,:] = self.transform(img)
-            img.close()  
+            img.close() 
+
 
         if self.mode == 'train':
             sample = (data,label)
@@ -138,7 +140,7 @@ class ResNet3D_DataLoader():
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
         print '==> Training data :',len(training_set),' videos'
-        #print training_set[1]
+        print training_set[1]
 
         train_loader = DataLoader(
             dataset=training_set, 
@@ -156,7 +158,7 @@ class ResNet3D_DataLoader():
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
         print '==> Validation data :',len(validation_set),' clips'
-        #print validation_set[1]
+        print validation_set[1]
 
         val_loader = DataLoader(
             dataset=validation_set, 

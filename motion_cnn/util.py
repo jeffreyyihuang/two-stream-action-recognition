@@ -100,8 +100,8 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
         imgH=(Image.open(h_image))
         imgV=(Image.open(v_image))
         if transform:
-            H = r_crop.crop_and_resize(transform(imgH))
-            V = r_crop.crop_and_resize(transform(imgV))
+            H = r_crop.crop(transform(imgH))
+            V = r_crop.crop(transform(imgV))
             
         else:
             H = imgH.resize([224,224])
@@ -115,21 +115,20 @@ def stackopf(classname,stack_idx,opf_img_path,transform):
 #customize random cropping
 class Random_Crop():
     def get_crop_size(self):
-        H = [256,224,192,168]
-        W = [256,224,192,168]
-        id1 = randint(0,len(H)-1)
-        id2 = randint(0,len(W)-1)
-        self.h_crop = H[id1]
-        self.w_crop = W[id2]
+        #H = [256,224,192,168]
+        #W = [256,224,192,168]
+        #id1 = randint(0,len(H)-1)
+        #id2 = randint(0,len(W)-1)
+        self.h_crop = 224#H[id1]
+        self.w_crop = 224#W[id2]
         
         self.h0 = randint(0,256-self.h_crop)
         self.w0 = randint(0,256-self.w_crop)
         
 
-    def crop_and_resize(self,img):
-        crop = img.crop([self.h0,self.w0,self.h_crop,self.w_crop])
-        resize = crop.resize([224,224])
-        return resize    
+    def crop(self,img):
+        crop = img.crop([self.h0,self.w0,self.h0+self.h_crop,self.w0+self.w_crop])
+        return crop   
     
 # other util
 def accuracy(output, target, topk=(1,)):
