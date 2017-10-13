@@ -39,6 +39,7 @@ def main():
     data_loader =ResNet3D_DataLoader(
                         BATCH_SIZE=arg.batch_size,
                         num_workers=8,
+                        in_channel=10,
                         data_path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
                         dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/resnet3d/dic/', 
                         )

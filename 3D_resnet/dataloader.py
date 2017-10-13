@@ -17,13 +17,14 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class ResNet3D_dataset(Dataset):  
-    def __init__(self, dic, root_dir, mode, transform=None):
+    def __init__(self, dic, in_channel, root_dir, mode, transform=None):
         #Generate a 16 Frame clip
         self.keys=dic.keys()
         self.values=dic.values()
         self.root_dir = root_dir
         self.transform = transform
         self.mode=mode
+        self.in_channel = in_channel
 
     def __len__(self):
         return len(self.keys)
@@ -39,10 +40,10 @@ class ResNet3D_dataset(Dataset):
 
         label = self.values[idx]
         label = int(label)-1
-        data = torch.FloatTensor(3,16,112,112)
+        data = torch.FloatTensor(3,self.in_channel,112,112)
         #data = np.zeros((3,16,112,112))
 
-        for i in range(16):
+        for i in range(self.in_channel):
             index = int(clips_idx) + i
             if video.split('_')[0] == 'HandstandPushups':
                 n,g = video.split('_',1)
@@ -66,12 +67,13 @@ class ResNet3D_dataset(Dataset):
         return sample
 
 class ResNet3D_DataLoader():
-    def __init__(self, BATCH_SIZE, num_workers, data_path, dic_path):
+    def __init__(self, BATCH_SIZE, num_workers, in_channel, data_path, dic_path):
 
         self.BATCH_SIZE=BATCH_SIZE
         self.num_workers = num_workers
         self.data_path=data_path
         self.dic_nb_frame={}
+        self.in_channel = in_channel
         #load data dictionary
         with open(dic_path+'/train_video.pickle','rb') as f:
             self.train_video=pickle.load(f)
@@ -90,7 +92,7 @@ class ResNet3D_DataLoader():
         #Preprocessing
         for key in dic_frame:
             video = key.split('_',1)[1].split('.',1)[0]
-            self.dic_nb_frame[video]= dic_frame[key]-16 # each segment with 16 frame
+            self.dic_nb_frame[video]= dic_frame[key] - self.in_channel # each segment with 16 frame
             #print self.dic_nb_frame
         self.dic_video_label={}
         for video in video_label:
@@ -117,7 +119,7 @@ class ResNet3D_DataLoader():
                 video = 'HandstandPushups_'+ g
             nb_frame = int(self.dic_nb_frame[video])
             for clip_idx in range(nb_frame):
-                if clip_idx % 16 ==0:
+                if clip_idx % self.in_channel ==0:
                     key = video + '-' + str(clip_idx+1)
                     self.dic_test_idx[key] = self.dic_video_label[video]
 
@@ -133,7 +135,7 @@ class ResNet3D_DataLoader():
             self.dic_video_train[key] = label 
                             
     def train(self):
-        training_set = ResNet3D_dataset(dic=self.dic_video_train, root_dir=self.data_path,
+        training_set = ResNet3D_dataset(dic=self.dic_video_train, in_channel=self.in_channel, root_dir=self.data_path,
             mode='train', 
             transform = transforms.Compose([
             transforms.ToTensor(),
@@ -151,7 +153,7 @@ class ResNet3D_DataLoader():
         return train_loader
 
     def val(self):
-        validation_set = ResNet3D_dataset(dic= self.dic_test_idx, root_dir=self.data_path ,
+        validation_set = ResNet3D_dataset(dic= self.dic_test_idx, in_channel=self.in_channel, root_dir=self.data_path ,
             mode ='val',
             transform = transforms.Compose([
             transforms.ToTensor(),
