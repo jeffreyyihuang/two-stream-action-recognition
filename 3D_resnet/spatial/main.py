@@ -20,26 +20,27 @@ from util import *
 from network import *
 from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 parser = argparse.ArgumentParser(description='PyTorch ResNet3D on UCF101')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=16, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
 
 def main():
+    print( '\n%s: calling main function ... ' % os.path.basename(__file__))
     global arg
     arg = parser.parse_args()
     print arg
-
+    
     #Prepare DataLoader
     data_loader =ResNet3D_DataLoader(
                         BATCH_SIZE=arg.batch_size,
                         num_workers=8,
-                        in_channel=10,
+                        in_channel=16,
                         data_path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
                         dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/resnet3d/dic/', 
                         )
@@ -54,13 +55,15 @@ def main():
                         start_epoch=arg.start_epoch,
                         evaluate=arg.evaluate,
                         train_loader=train_loader,
-                        val_loader=val_loader)
+                        val_loader=val_loader,
+                        multi_gpu=False
+                        )
     #Training
     model.run()
 
 class ResNet3D():
 
-    def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, val_loader):
+    def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, val_loader, multi_gpu):
         self.nb_epochs=nb_epochs
         self.lr=lr
         self.batch_size=batch_size
@@ -70,11 +73,16 @@ class ResNet3D():
         self.train_loader=train_loader
         self.val_loader=val_loader
         self.best_prec1=0
+        self.multi_gpu = multi_gpu
 
     def build_model(self):
         print ('==> Build model and setup loss and optimizer')
         #build model
-        self.model = resnet101().cuda()
+        model = resnet34()
+        if self.multi_gpu:
+            self.model = nn.DataParallel(model).cuda()
+        else:
+            self.model = model.cuda()
         #print self.model
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
@@ -132,20 +140,21 @@ class ResNet3D():
         # mini-batch training
         for i, (data,label) in enumerate(tqdm(self.train_loader)):
 
-    
             # measure data loading time
             data_time.update(time.time() - end)
+            #print data.size(), label.size()
             
-            label = label.cuda(async=True)
-            input_var = Variable(data).cuda()
-            target_var = Variable(label).cuda()
+            label_copy = label.cuda(async=True)
+            data_var = Variable(data).cuda()
+            label_var = Variable(label).cuda()
+
 
             # compute output
-            output = self.model(input_var)
-            loss = self.criterion(output, target_var)
+            output = self.model(data_var)
+            loss = self.criterion(output, label_var)
 
             # measure accuracy and record loss
-            prec1, prec5 = accuracy(output.data, label, topk=(1, 5))
+            prec1, prec5 = accuracy(output.data, label_copy, topk=(1, 5))
             losses.update(loss.data[0], data.size(0))
             top1.update(prec1[0], data.size(0))
             top5.update(prec5[0], data.size(0))
@@ -178,9 +187,11 @@ class ResNet3D():
         end = time.time()
         for i, (keys,data,label) in enumerate(tqdm(self.val_loader)):
             
-            label = label.cuda(async=True)
-            data_var = Variable(data, volatile=True).cuda(async=True)
-            label_var = Variable(label, volatile=True).cuda(async=True)
+            #label = label.cuda(async=True)
+            data_var = Variable(data)
+            label_var = Variable(label)
+            data_var = data_var.cuda()
+            label_var = label_var.cuda()
 
             # compute output
             output = self.model(data_var)

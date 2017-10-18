@@ -25,6 +25,8 @@ class ResNet3D_dataset(Dataset):
         self.transform = transform
         self.mode=mode
         self.in_channel = in_channel
+        self.img_rows = 112
+        self.img_cols = 112
 
     def __len__(self):
         return len(self.keys)
@@ -40,8 +42,10 @@ class ResNet3D_dataset(Dataset):
 
         label = self.values[idx]
         label = int(label)-1
-        data = torch.FloatTensor(3,self.in_channel,112,112)
+        data = torch.FloatTensor(3,self.in_channel,self.img_rows,self.img_cols)
         #data = np.zeros((3,16,112,112))
+        grc = GroupRandomCrop()
+        grc.get_params()
 
         for i in range(self.in_channel):
             index = int(clips_idx) + i
@@ -53,9 +57,16 @@ class ResNet3D_dataset(Dataset):
                 path = self.root_dir + video.split('_')[0]+'/separated_images/v_'+video+'/v_'+video+'_'
 
             img = Image.open(path +str(index)+'.jpg')
-            img = img.resize([112,112])
-            data[:,i,:,:] = self.transform(img)
+            if self.mode == 'train':
+                img = grc.crop(img)
+                data[:,i,:,:] = self.transform(img)
+            elif self.mode == 'val':
+                data[:,i,:,:] = self.transform(img)
+            else:
+                raise ValueError('There are only train and val mode')
             img.close() 
+            
+            
 
 
         if self.mode == 'train':
@@ -74,6 +85,8 @@ class ResNet3D_DataLoader():
         self.data_path=data_path
         self.dic_nb_frame={}
         self.in_channel = in_channel
+        self.img_rows=112
+        self.img_cols=112
         #load data dictionary
         with open(dic_path+'/train_video.pickle','rb') as f:
             self.train_video=pickle.load(f)
@@ -138,11 +151,12 @@ class ResNet3D_DataLoader():
         training_set = ResNet3D_dataset(dic=self.dic_video_train, in_channel=self.in_channel, root_dir=self.data_path,
             mode='train', 
             transform = transforms.Compose([
+            #transforms.Scale([112,112]),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
-        print '==> Training data :',len(training_set),' videos'
-        print training_set[1]
+        print '==> Training data :',len(training_set),' videos',training_set[1][0].size()
+        #print training_set[1]
 
         train_loader = DataLoader(
             dataset=training_set, 
@@ -156,11 +170,12 @@ class ResNet3D_DataLoader():
         validation_set = ResNet3D_dataset(dic= self.dic_test_idx, in_channel=self.in_channel, root_dir=self.data_path ,
             mode ='val',
             transform = transforms.Compose([
+            transforms.Scale([self.img_rows,self.img_cols]),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
             ]))
-        print '==> Validation data :',len(validation_set),' clips'
-        print validation_set[1]
+        print '==> Validation data :',len(validation_set),' clips',validation_set[1][1].size()
+        #print validation_set[1]
 
         val_loader = DataLoader(
             dataset=validation_set, 
@@ -170,6 +185,22 @@ class ResNet3D_DataLoader():
 
         return val_loader
 
+class GroupRandomCrop():
+    def get_params(self):
+        #H = [256,224,192,168]
+        #W = [256,224,192,168]
+        #id1 = randint(0,len(H)-1)
+        #id2 = randint(0,len(W)-1)
+        self.h_crop = 112#H[id1]
+        self.w_crop = 112#W[id2]
+        
+        self.h0 = randint(0,128-self.h_crop)
+        self.w0 = randint(0,128-self.w_crop)
+        
+    def crop(self,img):
+        img = img.resize([128,128])
+        crop = img.crop([self.h0,self.w0,self.h0+self.h_crop,self.w0+self.w_crop])
+        return crop
 
 if __name__ == '__main__':
     data_loader = ResNet3D_DataLoader(BATCH_SIZE=1,num_workers=1,

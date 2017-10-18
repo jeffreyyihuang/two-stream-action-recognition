@@ -169,6 +169,7 @@ def resnet18(pretrained=False, channel= 20, **kwargs):
        model_dict = model.state_dict()
        model_dict=weight_transform(model_dict, pretrain_dict, channel)
        model.load_state_dict(model_dict)
+    print '==> Model: Resnet18'
     return model
 
 
@@ -180,6 +181,7 @@ def resnet34(pretrained=False, channel= 20, **kwargs):
        model_dict = model.state_dict()
        model_dict=weight_transform(model_dict, pretrain_dict, channel)
        model.load_state_dict(model_dict)
+    print '==> Model: Resnet34'
     return model
 
 
@@ -191,6 +193,7 @@ def resnet50(pretrained=False, channel= 20, **kwargs):
        model_dict = model.state_dict()
        model_dict=weight_transform(model_dict, pretrain_dict, channel)
        model.load_state_dict(model_dict)
+    print '==> Model: Resnet50'
     return model
 
 
@@ -202,6 +205,7 @@ def resnet101(pretrained=False, channel= 20, **kwargs):
        model_dict = model.state_dict()
        model_dict=weight_transform(model_dict, pretrain_dict, channel)
        model.load_state_dict(model_dict)
+    print '==> Model: Resnet101'
 
     return model
 
