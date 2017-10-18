@@ -92,7 +92,7 @@ class ResNet3D_DataLoader():
         #Preprocessing
         for key in dic_frame:
             video = key.split('_',1)[1].split('.',1)[0]
-            self.dic_nb_frame[video]= dic_frame[key] - self.in_channel # each segment with 16 frame
+            self.dic_nb_frame[video]= dic_frame[key] - self.in_channel # each segment with self.in_channel frame
             #print self.dic_nb_frame
         self.dic_video_label={}
         for video in video_label:
