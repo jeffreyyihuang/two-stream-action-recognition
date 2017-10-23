@@ -18,8 +18,9 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from util import *
 from network import *
+from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
 
 parser = argparse.ArgumentParser(description='PyTorch Sub-JHMDB rgb frame training')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
@@ -36,18 +37,17 @@ def main():
     print arg
 
     #Prepare DataLoader
-    data_loader = Data_Loader(
+    data_loader = Motion_DataLoader(
                         BATCH_SIZE=arg.batch_size,
                         num_workers=8,
                         data_path='/home/ubuntu/data/UCF101/tvl1_flow/',
-                        dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dictionary/motion/',
-                        nb_per_stack=arg.nb_per_stack,
+                        dic_path='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/resnet3d/dic/',
+                        in_channel=arg.nb_per_stack,
                         )
     
-    train_loader = data_loader.train()
-    test_loader = data_loader.validate()
+    train_loader,test_loader = data_loader.run()
     #Model 
-    spatial_cnn = Spatial_CNN(
+    model = Motion_CNN(
                         # Data Loader
                         train_loader=train_loader,
                         test_loader=test_loader,
@@ -61,9 +61,9 @@ def main():
                         batch_size=arg.batch_size,
                         channel = arg.nb_per_stack*2,)
     #Training
-    spatial_cnn.run()
+    model.run()
 
-class Spatial_CNN():
+class Motion_CNN():
     def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, test_loader, channel):
         self.nb_epochs=nb_epochs
         self.lr=lr
@@ -79,12 +79,13 @@ class Spatial_CNN():
     def build_model(self):
         print ('==> Build model and setup loss and optimizer')
         #build model
-        self.model = resnet101(pretrained= True, channel=self.channel).cuda()
+        self.model = resnet101(pretrained= True, channel=self.channel)
+        self.model = nn.DataParallel(self.model).cuda()
         #print self.model
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
         self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
-        self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=1,verbose=True)
+        self.scheduler = ReduceLROnPlateau(self.optimizer, 'min', patience=1,verbose=True)
 
     def resume_and_evaluate(self):
         if self.resume:
@@ -112,7 +113,7 @@ class Spatial_CNN():
             prec1, val_loss = self.validate_1epoch()
             is_best = prec1 > self.best_prec1
             #lr_scheduler
-            self.scheduler.step(prec1)
+            self.scheduler.step(val_loss)
             # save model
             if is_best:
                 self.best_prec1 = prec1
@@ -171,7 +172,9 @@ class Spatial_CNN():
                 'Data Time':[round(data_time.avg,3)],
                 'Loss':[round(losses.avg,5)],
                 'Prec@1':[round(top1.avg,4)],
-                'Prec@5':[round(top5.avg,4)]}
+                'Prec@5':[round(top5.avg,4)],
+                'lr': self.optimizer.param_groups[0]['lr']
+                }
         record_info(info, 'record/training.csv','train')
 
     def validate_1epoch(self):
@@ -214,14 +217,15 @@ class Spatial_CNN():
                     self.dic_video_level_preds[videoName] += preds[j,:]
                     
         #Frame to video level accuracy
-        video_top1, video_top5 = self.frame2_video_level_accuracy()
+        video_top1, video_top5, video_loss = self.frame2_video_level_accuracy()
         info = {'Epoch':[self.epoch],
                 'Batch Time':[round(batch_time.avg,3)],
-                'Loss':[round(losses.avg,5)],
+                'Loss':[round(video_loss,5)],
                 'Prec@1':[round(video_top1,3)],
-                'Prec@5':[round(video_top5,3)]}
+                'Prec@5':[round(video_top5,3)]
+                }
         record_info(info, 'record/testing.csv','test')
-        return video_top1, losses.avg
+        return video_top1, video_loss
 
     def frame2_video_level_accuracy(self):
         with open('/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dic_video_label.pickle','rb') as f:
@@ -252,15 +256,16 @@ class Spatial_CNN():
         #top1 top5
         video_level_labels = torch.from_numpy(video_level_labels).long()
         video_level_preds = torch.from_numpy(video_level_preds).float()
-            
+
+        loss = self.criterion(Variable(video_level_preds).cuda(), Variable(video_level_labels).cuda())    
         top1,top5 = accuracy(video_level_preds, video_level_labels, topk=(1,5))     
                             
         top1 = float(top1.numpy())
         top5 = float(top5.numpy())
             
         #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
-        return top1,top5
-
+        return top1,top5,loss.data.cpu().numpy()
+'''
 class Data_Loader():
     def __init__(self, BATCH_SIZE, num_workers, data_path, dic_path, nb_per_stack):
 
@@ -315,6 +320,6 @@ class Data_Loader():
             shuffle=False,
             num_workers=self.num_workers)
         return test_loader
-
+'''
 if __name__=='__main__':
     main()

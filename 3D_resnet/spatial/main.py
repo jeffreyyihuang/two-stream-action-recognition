@@ -20,11 +20,11 @@ from util import *
 from network import *
 from dataloader import *
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2,3"
 
 parser = argparse.ArgumentParser(description='PyTorch ResNet3D on UCF101')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
-parser.add_argument('--batch-size', default=32, type=int, metavar='N', help='mini-batch size (default: 64)')
+parser.add_argument('--batch-size', default=128, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
@@ -87,7 +87,7 @@ class ResNet3D():
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
         self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
-        self.scheduler = ReduceLROnPlateau(self.optimizer, 'max', patience=1,verbose=True)
+        self.scheduler = ReduceLROnPlateau(self.optimizer, 'min', patience=2,verbose=True)
 
     def resume_and_evaluate(self):
         if self.resume:
@@ -115,7 +115,7 @@ class ResNet3D():
             self.train_1epoch()
             print('==> Epoch:[{0}/{1}][validation stage]'.format(self.epoch, self.nb_epochs))
             prec1, val_loss = self.validate_1epoch()
-            self.scheduler.step(prec1)
+            self.scheduler.step(val_loss)
             
             is_best = prec1 > self.best_prec1
             if is_best:
@@ -178,7 +178,6 @@ class ResNet3D():
 
     def validate_1epoch(self):
         batch_time = AverageMeter()
-        losses = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
         # switch to evaluate mode
@@ -195,11 +194,6 @@ class ResNet3D():
 
             # compute output
             output = self.model(data_var)
-            loss = self.criterion(output, label_var)
-
-            # measure loss
-            losses.update(loss.data[0], data.size(0))
-
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
@@ -213,15 +207,15 @@ class ResNet3D():
                 else:
                     self.dic_video_level_preds[videoName] += preds[j,:]
 
-        video_top1, video_top5 = self.frame2_video_level_accuracy()
+        video_top1, video_top5, video_loss = self.frame2_video_level_accuracy()
 
         info = {'Epoch':[self.epoch],
                 'Batch Time':[round(batch_time.avg,3)],
-                'Loss':[round(losses.avg,5)],
+                'Loss':[round(video_loss,5)],
                 'Prec@1':[round(video_top1,3)],
                 'Prec@5':[round(video_top5,3)]}
         record_info(info, 'record/testing.csv','test')
-        return video_top1, losses.avg
+        return video_top1, video_loss 
 
     def frame2_video_level_accuracy(self):
         with open('/home/ubuntu/cvlab/pytorch/ucf101_two_stream/dic_video_label.pickle','rb') as f:
@@ -256,14 +250,16 @@ class ResNet3D():
         #top1 top5
         video_level_labels = torch.from_numpy(video_level_labels).long()
         video_level_preds = torch.from_numpy(video_level_preds).float()
-            
+
+        loss = self.criterion(Variable(video_level_preds).cuda(), Variable(video_level_labels).cuda())            
         top1,top5 = accuracy(video_level_preds, video_level_labels, topk=(1,5))     
                             
         top1 = float(top1.numpy())
         top5 = float(top5.numpy())
+
             
         #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
-        return top1,top5
+        return top1,top5,loss.data.cpu().numpy()
 
 
 if __name__ == '__main__':

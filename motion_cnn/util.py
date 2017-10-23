@@ -16,7 +16,7 @@ import torch
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 from torch.optim import Optimizer
-
+'''
 # Dataset
 class UCF101_opf_training_set(Dataset):  
     def __init__(self, dic_video_training, dic_nb_frame, root_dir, transform):
@@ -129,7 +129,7 @@ class Random_Crop():
     def crop(self,img):
         crop = img.crop([self.h0,self.w0,self.h0+self.h_crop,self.w0+self.w_crop])
         return crop   
-    
+ '''   
 # other util
 def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
@@ -167,16 +167,7 @@ def save_checkpoint(state, is_best, filename='record/checkpoint.pth.tar'):
     torch.save(state, filename)
     if is_best:
         shutil.copyfile(filename, 'record/model_best.pth.tar')
-'''
-def set_channel(dic, channel):
-    dic_stack={}
-    for key in dic:
-        frame_idx = int(key.split('/')[-1].split('.',1)[0])
-        if frame_idx % channel == 0:
-            dic_stack[key] = dic[key]
 
-    return dic_stack
-'''
 def record_info(info,filename,mode):
 
     if mode =='train':
@@ -186,8 +177,9 @@ def record_info(info,filename,mode):
               'Data {data_time} \n'
               'Loss {loss} '
               'Prec@1 {top1} '
-              'Prec@5 {top5}\n'.format(batch_time=info['Batch Time'],
-               data_time=info['Data Time'], loss=info['Loss'], top1=info['Prec@1'], top5=info['Prec@5']))      
+              'Prec@5 {top5}\n'
+              'lr {lr}'.format(batch_time=info['Batch Time'],
+               data_time=info['Data Time'], loss=info['Loss'], top1=info['Prec@1'], top5=info['Prec@5'],lr=info['lr']))      
         print result
 
         df = pd.DataFrame.from_dict(info)
@@ -209,33 +201,3 @@ def record_info(info,filename,mode):
     else: # else it exists so append without writing the header
         df.to_csv(filename,mode = 'a',header=False,index=False,columns=column_names) 
 
-# Test data loader
-if __name__ == '__main__':
-    import numpy as np
-    data_path='/home/ubuntu/data/JHMDB/pose_estimation/pose_estimation/'
-    dic_path='/home/ubuntu/cvlab/pytorch/Sub-JHMDB_pose_stream/get_train_test_split/'
-
-
-    with open(dic_path+'/dic_pose_train.pickle','rb') as f:
-        dic_training=pickle.load(f)
-    f.close()
-
-    with open(dic_path+'/dic_pose_test.pickle','rb') as f:
-        dic_testing=pickle.load(f)
-    f.close()
-
-    training_set = JHMDB_Pose_heatmap_data_set(dic=dic_training, root_dir=data_path, nb_per_stack=10, transform = transforms.Compose([
-            transforms.RandomCrop(224),
-            #transforms.RandomHorizontalFlip(),
-            #transforms.ToTensor(),
-            ]))
-    
-    validation_set = JHMDB_Pose_heatmap_data_set(dic=dic_testing, root_dir=data_path, nb_per_stack=10,transform = transforms.Compose([
-            transforms.CenterCrop(224),
-            #transforms.ToTensor(),
-            ]))
-    print type(training_set[1][1][1,:,:].numpy())
-    a = (training_set[1][1][1,:,:].numpy())
-    with open('test.pickle','wb') as f:
-        pickle.dump(a,f)
-    f.close()
