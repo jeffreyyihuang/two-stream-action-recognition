@@ -23,13 +23,14 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   
 ## 3. Training stategies
   ###  3.1 Spatial cnn
-  * In every mini-batch, we randomly select 64 frames from 186351 training frames.
-  ### 3.2 Motion cnn
+  * Here we utilize the techniques in Temporal Segment Network. for every videos in a mini-batch, we randomly select 3 frames from each video. Then a consensus among the frames will be derived as the video-level prediction for calculating loss.
+  ### 3.2 Motion cnn
   * In every mini-batch, we randomly select 64 (batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
   ### 3.3 Data augmentation
   * Both stream apply the same data augmentation technique such as random cropping.
 ## 4. Testing method
-  * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is the voting result of all 25 frame level predictions.
+  * For every 3783 testing videos, we uniformly sample 19 frames in each video and the video level prediction is the voting result of all 19 frame level predictions.
+  * The reason we choose the number 19 is that the minimun number of video frames in UCF101 is 28 and we have to make sure there are sufficient frames for testing in 10 stack motion stream.
 ## 5. Performace
    
  network      | top1  |
