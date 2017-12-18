@@ -38,7 +38,7 @@ class motion_dataset(Dataset):
         i = int(self.clips_idx)
 
 
-        for j in range(-4,self.in_channel-5+1):
+        for j in range(self.in_channel):
             idx = i + j
             idx = str(idx)
             frame_idx = 'frame'+ idx.zfill(6)
@@ -66,7 +66,7 @@ class motion_dataset(Dataset):
         
         if self.mode == 'train':
             self.video, nb_clips = self.keys[idx].split('-')
-            self.clips_idx = random.randint(5,int(nb_clips))
+            self.clips_idx = random.randint(1,int(nb_clips))
         elif self.mode == 'val':
             self.video,self.clips_idx = self.keys[idx].split('-')
         else:
