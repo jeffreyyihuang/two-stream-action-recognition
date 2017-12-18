@@ -130,7 +130,7 @@ class Motion_DataLoader():
 
             sampling_interval = int((self.frame_count[video]-10+1)/19)
             for index in range(19):
-                clip_idx = 5+ index*sampling_interval
+                clip_idx = index*sampling_interval
                 key = video + '-' + str(clip_idx)
                 self.dic_test_idx[key] = self.test_video[video]
              
