@@ -261,7 +261,8 @@ class Motion_CNN():
         top1 = float(top1.numpy())
         top5 = float(top5.numpy())
             
-        return top1,top5, loss.data.cpu().numpy()
+        #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
+        return top1,top5,loss.data.cpu().numpy()
 
 if __name__=='__main__':
     main()
