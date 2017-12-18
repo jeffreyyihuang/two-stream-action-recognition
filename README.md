@@ -32,13 +32,14 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   * For every 3783 testing videos, we uniformly sample 25 frames in each video and the video level prediction is the voting result of all 25 frame level predictions.
 ## 5. Performace
    
- network      | top1  | top5 |
---------------|:-----:|:----:| 
-Spatial cnn   | 82.4% | 94.8% | 
-Motion cnn    | 78.2% | 94.4% | 
-Average fusion| 89.9% | 98.3% |     
+ network      | top1  |
+--------------|:-----:|
+Spatial cnn   | 82.1% | 
+Motion cnn    | 80.3% | 
+Average fusion| 89.9% |      
    
-## 6. Result
-<img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/spatial_cnn.png" width = "400" height = "250" alt="Spatial" align=left />
-<img src="https://github.com/jeffreyhuang1/pytorch-two-stream-cnn-ucf101/blob/master/result/motion_cnn.png" width = "400" height = "250" alt="Motion" align=left />
+## 6. Pre-trained Model
+
+[Spatial resent101](https://drive.google.com/drive/folders/1gVB5StqgoDJ3IxHUn7zoTzTNxzz3du3d?usp=sharing)
+[Motion resent101](https://drive.google.com/drive/folders/1z3fYUOJx_l3BW-NSb7ti0DsyGLFk6Z7J?usp=sharing)
 
