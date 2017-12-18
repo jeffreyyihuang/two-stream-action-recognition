@@ -131,7 +131,7 @@ class Motion_DataLoader():
             sampling_interval = int((self.frame_count[video]-10+1)/19)
             for index in range(19):
                 clip_idx = index*sampling_interval
-                key = video + '-' + str(clip_idx)
+                key = video + '-' + str(clip_idx+1)
                 self.dic_test_idx[key] = self.test_video[video]
              
     def get_training_dic(self):
