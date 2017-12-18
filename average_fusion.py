@@ -5,11 +5,6 @@ import torch
 from utils import *
 import dataloader
 
-
-
-
-
-
 if __name__ == '__main__':
 
     rgb_preds='record/spatial/spatial_video_preds.pickle'
