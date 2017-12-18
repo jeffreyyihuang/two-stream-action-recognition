@@ -23,7 +23,7 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   
 ## 3. Training stategies
   ###  3.1 Spatial cnn
-  * Here we utilize the techniques in Temporal Segment Network. for every videos in a mini-batch, we randomly select 3 frames from each video. Then a consensus among the frames will be derived as the video-level prediction for calculating loss.
+  * Here we utilize the techniques in Temporal Segment Network. For every videos in a mini-batch, we randomly select 3 frames from each video. Then a consensus among the frames will be derived as the video-level prediction for calculating loss.
   ### 3.2 Motion cnn
   * In every mini-batch, we randomly select 64 (batch size) videos from 9537 training videos and futher randomly select 1 stacked optical flow in each video. 
   ### 3.3 Data augmentation
