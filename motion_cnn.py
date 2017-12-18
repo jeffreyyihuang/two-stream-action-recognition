@@ -23,14 +23,14 @@ import dataloader
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
-parser = argparse.ArgumentParser(description='PyTorch Sub-JHMDB rgb frame training')
+parser = argparse.ArgumentParser(description='UCF101 motion stream on resnet101')
 parser.add_argument('--epochs', default=500, type=int, metavar='N', help='number of total epochs')
 parser.add_argument('--batch-size', default=64, type=int, metavar='N', help='mini-batch size (default: 64)')
 parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-parser.add_argument('--nb_per_stack', default=10, type=int, metavar='N',help='number of joint positions in 1 stack (default: 5)')
+parser.add_argument('--nb_per_stack', default=10, type=int, metavar='N',help='number of optical flow images in 1 stack (default: 10)')
 
 def main():
     global arg
@@ -149,8 +149,7 @@ class Motion_CNN():
         # mini-batch training
         progress = tqdm(self.train_loader)
         for i, (data,label) in enumerate(progress):
-            #print data.size()
-            #data = data.sub_(127.353346189).div_(14.971742063)
+
             # measure data loading time
             data_time.update(time.time() - end)
             
@@ -261,7 +260,6 @@ class Motion_CNN():
         top1 = float(top1.numpy())
         top5 = float(top5.numpy())
             
-        #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
         return top1,top5,loss.data.cpu().numpy()
 
 if __name__=='__main__':
