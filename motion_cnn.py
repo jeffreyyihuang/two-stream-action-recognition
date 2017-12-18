@@ -30,7 +30,6 @@ parser.add_argument('--lr', default=1e-2, type=float, metavar='LR', help='initia
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-parser.add_argument('--nb_per_stack', default=10, type=int, metavar='N',help='number of optical flow images in 1 stack (default: 10)')
 
 def main():
     global arg
@@ -44,7 +43,7 @@ def main():
                         path='/home/ubuntu/data/UCF101/tvl1_flow/',
                         ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
                         ucf_split='01',
-                        in_channel=arg.nb_per_stack,
+                        in_channel=10,
                         )
     
     train_loader,test_loader, test_video = data_loader.run()
@@ -61,7 +60,7 @@ def main():
                         nb_epochs=arg.epochs,
                         lr=arg.lr,
                         batch_size=arg.batch_size,
-                        channel = arg.nb_per_stack*2,
+                        channel = 10*2,
                         test_video=test_video
                         )
     #Training
