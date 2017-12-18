@@ -36,7 +36,7 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
 --------------|:-----:|
 Spatial cnn   | 82.1% | 
 Motion cnn    | 80.3% | 
-Average fusion| 89.9% |      
+Average fusion| 88.3% |      
    
 ## 6. Pre-trained Model
 
