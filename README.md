@@ -44,3 +44,10 @@ Average fusion| 88.3% |      
 * [Spatial resent101](https://drive.google.com/drive/folders/1gVB5StqgoDJ3IxHUn7zoTzTNxzz3du3d?usp=sharing)
 * [Motion resent101](https://drive.google.com/drive/folders/1z3fYUOJx_l3BW-NSb7ti0DsyGLFk6Z7J?usp=sharing)
 
+## 7. Testing on Your Device
+  ### Motion stream
+ Please modify the [funcition of load_ucf_image](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/dataloader/spatial_dataloader.py#L21) to fit the UCF101 dataset on your device
+ ### Motion stream
+ Please modify this [funcition of stack_opf](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/dataloader/motion_dataloader.py#L32) to fit the UCF101 dataset on your device
+ 
+
