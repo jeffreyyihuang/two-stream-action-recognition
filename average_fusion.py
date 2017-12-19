@@ -30,7 +30,7 @@ if __name__ == '__main__':
     for name in sorted(rgb.keys()):   
         r = rgb[name]
         o = opf[name]
-        #preds=p+r
+
         label = int(test_video[name])-1
                     
         video_level_preds[ii,:] = (r+o)
