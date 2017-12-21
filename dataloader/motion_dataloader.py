@@ -116,13 +116,13 @@ class Motion_DataLoader():
     def run(self):
         self.load_frame_count()
         self.get_training_dic()
-        self.val_sample25()
+        self.val_sample19()
         train_loader = self.train()
         val_loader = self.val()
 
         return train_loader, val_loader, self.test_video
             
-    def val_sample25(self):
+    def val_sample19(self):
         self.dic_test_idx = {}
         #print len(self.test_video)
         for video in self.test_video:
