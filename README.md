@@ -11,7 +11,23 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   ### 1.2 Motion input data -> stacked optical flow images
   In motion stream, we use two methods to get desire optical flow data. 
   1. Download the preprocessed tvl1 optical flow dataset directly from https://github.com/feichtenhofer/twostreamfusion. 
-  2. Using [flownet2.0 method](https://github.com/lmb-freiburg/flownet2-docker) to generate 2-channel optical flow image and save its x, y channel as .jpg image in disk respectively which cost about 56G. 
+  2. Using [flownet2.0 method](https://github.com/lmb-freiburg/flownet2-docker) to generate 2-channel optical flow image and save its x, y channel as .jpg image in disk respectively which cost about 56G.
+  ### 1.3 Download the preprocessed data directly from [feichtenhofer/twostreamfusion](https://github.com/feichtenhofer/twostreamfusion))
+  #### RGB images
+  ```
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_jpegs_256.zip.001
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_jpegs_256.zip.002
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_jpegs_256.zip.003
+  cat ucf101_jpegs_256.zip* > ucf101_jpegs_256.zip
+  ```
+  #### Optical Flow
+  ```
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_tvl1_flow.zip.001
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_tvl1_flow.zip.002
+  wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_tvl1_flow.zip.003
+  cat ucf101_tvl1_flow.zip* > ucf101_tvl1_flow.zip
+  ```
+  
 
 ## 2. Model
   ### 2.1 Spatial cnn
