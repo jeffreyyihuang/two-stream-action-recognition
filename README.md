@@ -5,7 +5,7 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
 *  [[2] Temporal Segment Networks: Towards Good Practices for Deep Action Recognition](https://link.springer.com/chapter/10.1007/978-3-319-46484-8_2)
 * [[3] TS-LSTM and Temporal-Inception: Exploiting Spatiotemporal Dynamics for Activity Recognition](https://arxiv.org/abs/1703.10667)
 
-## 1. Data Preprocessing
+## 1. Data
   ### 1.1 Spatial input data -> rgb frames
   * We extract RGB frames from each video in UCF101 dataset with sampling rate: 10 and save as .jpg image in disk which cost about 5.9G.
   ### 1.2 Motion input data -> stacked optical flow images
