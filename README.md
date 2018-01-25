@@ -65,14 +65,14 @@ Average fusion| 88.5% |      
  * Please modify this [path](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/spatial_cnn.py#L42) and this [funcition](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/dataloader/spatial_dataloader.py#L21) to fit the UCF101 dataset on your device.
  * Load pretrain model
  ```
- python spatial_cnn.py --resume PATH_TO_PRETRAIN_MODEL
+ python spatial_cnn.py --resume PATH_TO_PRETRAINED_MODEL
  ```
  
  ### Motion stream
  *  Please modify this [path](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/motion_cnn.py#L44) and this [funcition](https://github.com/jeffreyhuang1/two-stream-action-recognition/blob/master/dataloader/motion_dataloader.py#L32) to fit the UCF101 dataset on your device.
   * Load pretrain model
  ```
- python motion_cnn.py --resume PATH_TO_PRETRAIN_MODEL
+ python motion_cnn.py --resume PATH_TO_PRETRAINED_MODEL
  ```
  
 
