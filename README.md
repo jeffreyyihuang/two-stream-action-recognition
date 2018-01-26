@@ -19,6 +19,7 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_jpegs_256.zip.002
   wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_jpegs_256.zip.003
   cat ucf101_jpegs_256.zip* > ucf101_jpegs_256.zip
+  unzip ucf101_jpegs_256.zip
   ```
   * Optical Flow
   ```
@@ -26,6 +27,7 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_tvl1_flow.zip.002
   wget http://ftp.tugraz.at/pub/feichtenhofer/tsfusion/data/ucf101_tvl1_flow.zip.003
   cat ucf101_tvl1_flow.zip* > ucf101_tvl1_flow.zip
+  unzip ucf101_tvl1_flow.zip
   ```
   
 
