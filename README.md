@@ -39,9 +39,11 @@ We use a spatial and motion stream cnn with ResNet101 for modeling video informa
   ### 2.2 Motion cnn
   * Input data of motion cnn is a stack of optical flow images which contained 10 x-channel and 10 y-channel images, So it's input shape is (20, 224, 224) which can be considered as a 20-channel image. 
   * In order to utilize ImageNet pre-trained weight on our model, we have to modify the weights of the first convolution layer pre-trained  with ImageNet from (64, 3, 7, 7) to (64, 20, 7, 7). 
-  * In [2] Wang provide a method called **Cross modality pre-training** to do such weights shape transform. He first average the weight value across the RGB channels and replicate this average by the channel number of motion stream input( which is 20 is this case)
+  * In [2] Wang provide a method called **Cross modality pre-
   
-## 3. Training stategies
+  ** to do such weights shape transform. He first average the weight value across the RGB channels and replicate this average by the channel number of motion stream input( which is 20 is this case)
+  
+## 3. Training strategies
   ###  3.1 Spatial cnn
   * Here we utilize the techniques in Temporal Segment Network. For every videos in a mini-batch, we randomly select 3 frames from each video. Then a consensus among the frames will be derived as the video-level prediction for calculating loss.
   ### 3.2 Motion cnn
